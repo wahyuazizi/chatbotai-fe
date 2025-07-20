@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,17 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { login } = useAuth(); // <-- Baris ini harus ada
+  const { login, isAuthenticated, role, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      if (role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/chat");
+      }
+    }
+  }, [isAuthenticated, role, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,14 +46,10 @@ export default function LoginPage() {
       const { access_token, role } = response.data; // Extract access_token and role
       login(access_token, role);
 
-      if (role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/chat");
-      }
+      // No need for explicit router.push here, AuthContext will handle it
     } catch (err: any) {
       console.error("Login failed, error:", err);
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Login gagal");
     } finally {
       setIsLoading(false);
     }
@@ -72,10 +78,10 @@ export default function LoginPage() {
             <Lock className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-[#49cc90] to-emerald-600 bg-clip-text text-transparent">
-            Welcome Back
+            Selamat Datang
           </CardTitle>
           <CardDescription className="text-gray-600 mt-2">
-            Sign in to continue your journey
+            Masuk untuk menggunakan chatbot kampus
           </CardDescription>
         </CardHeader>
         
@@ -89,14 +95,14 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-semibold text-gray-700 block">
-                Email Address
+                Alamat Email
               </label>
               <div className="relative group">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#49cc90] transition-colors duration-200" />
                 <Input
                   type="email"
                   id="email"
-                  placeholder="Enter your email"
+                  placeholder="Masukkan email Anda"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -107,14 +113,14 @@ export default function LoginPage() {
             
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-semibold text-gray-700 block">
-                Password
+                Kata Sandi
               </label>
               <div className="relative group">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#49cc90] transition-colors duration-200" />
                 <Input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  placeholder="Enter your password"
+                  placeholder="Masukkan kata sandi Anda"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -133,10 +139,10 @@ export default function LoginPage() {
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input type="checkbox" className="rounded border-gray-300 text-[#49cc90] focus:ring-[#49cc90]" />
-                <span className="text-gray-600">Remember me</span>
+                <span className="text-gray-600">Ingat saya</span>
               </label>
               <a href="/forgot-password" className="text-[#49cc90] hover:text-emerald-600 font-medium transition-colors duration-200">
-                Forgot password?
+                Lupa kata sandi?
               </a>
             </div>
             
@@ -148,10 +154,10 @@ export default function LoginPage() {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Signing in...</span>
+                  <span>Masuk...</span>
                 </div>
               ) : (
-                "Sign In"
+                "Masuk"
               )}
             </Button>
           </form>
@@ -160,12 +166,12 @@ export default function LoginPage() {
         <CardFooter className="pt-6">
           <div className="w-full text-center">
             <p className="text-gray-600 text-sm">
-              Don't have an account?{" "}
+              Belum memiliki akun?{" "}
               <a 
                 href="/register" 
                 className="text-[#49cc90] hover:text-emerald-600 font-semibold transition-colors duration-200 hover:underline"
               >
-                Create one now
+                Daftar sekarang
               </a>
             </p>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 import { Mail, Lock, Eye, EyeOff, Loader2, User, UserPlus, Check, X } from "lucide-react";
 
 export default function RegisterPage() {
@@ -26,6 +27,17 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const router = useRouter();
+  const { isAuthenticated, role, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      if (role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/chat");
+      }
+    }
+  }, [isAuthenticated, role, loading, router]);
 
   // Password strength checker
   const getPasswordStrength = (pwd: string) => {
@@ -46,17 +58,17 @@ export default function RegisterPage() {
     setError("");
     
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Kata sandi tidak cocok");
       return;
     }
     
     if (passwordStrength < 3) {
-      setError("Password is too weak. Please use at least 8 characters with a mix of letters, numbers, and symbols.");
+      setError("Kata sandi terlalu lemah. Gunakan minimal 8 karakter dengan kombinasi huruf, angka, dan simbol.");
       return;
     }
     
     if (!acceptTerms) {
-      setError("Please accept the terms and conditions");
+      setError("Harap menyetujui syarat dan ketentuan");
       return;
     }
     
@@ -66,7 +78,7 @@ export default function RegisterPage() {
       await api.post("/auth/register", { name, email, password });
       router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(err.response?.data?.message || "Pendaftaran gagal");
     } finally {
       setIsLoading(false);
     }
@@ -80,10 +92,10 @@ export default function RegisterPage() {
   };
 
   const getPasswordStrengthText = () => {
-    if (passwordStrength <= 2) return "Weak";
-    if (passwordStrength === 3) return "Fair";
-    if (passwordStrength === 4) return "Good";
-    return "Strong";
+    if (passwordStrength <= 2) return "Lemah";
+    if (passwordStrength === 3) return "Cukup";
+    if (passwordStrength === 4) return "Baik";
+    return "Kuat";
   };
 
   return (
@@ -111,10 +123,10 @@ export default function RegisterPage() {
             <UserPlus className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-[#49cc90] to-emerald-600 bg-clip-text text-transparent">
-            Join Us Today
+            Daftar Akun
           </CardTitle>
           <CardDescription className="text-gray-600 mt-2">
-            Create your account and start your journey
+            Buat akun untuk menggunakan chatbot kampus
           </CardDescription>
         </CardHeader>
         
@@ -128,14 +140,14 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-semibold text-gray-700 block">
-                Full Name
+                Nama Lengkap
               </label>
               <div className="relative group">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#49cc90] transition-colors duration-200" />
                 <Input
                   type="text"
                   id="name"
-                  placeholder="Enter your full name"
+                  placeholder="Masukkan nama lengkap Anda"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -146,14 +158,14 @@ export default function RegisterPage() {
             
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-semibold text-gray-700 block">
-                Email Address
+                Alamat Email
               </label>
               <div className="relative group">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#49cc90] transition-colors duration-200" />
                 <Input
                   type="email"
                   id="email"
-                  placeholder="Enter your email"
+                  placeholder="Masukkan email Anda"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -164,14 +176,14 @@ export default function RegisterPage() {
             
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-semibold text-gray-700 block">
-                Password
+                Kata Sandi
               </label>
               <div className="relative group">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#49cc90] transition-colors duration-200" />
                 <Input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  placeholder="Create a strong password"
+                  placeholder="Buat kata sandi yang kuat"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -188,7 +200,7 @@ export default function RegisterPage() {
               {password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-gray-600">Password strength</span>
+                    <span className="text-gray-600">Kekuatan kata sandi</span>
                     <span className={`font-medium ${passwordStrength <= 2 ? 'text-red-500' : passwordStrength === 3 ? 'text-yellow-500' : 'text-[#49cc90]'}`}>
                       {getPasswordStrengthText()}
                     </span>
@@ -205,14 +217,14 @@ export default function RegisterPage() {
             
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700 block">
-                Confirm Password
+                Konfirmasi Kata Sandi
               </label>
               <div className="relative group">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#49cc90] transition-colors duration-200" />
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
-                  placeholder="Confirm your password"
+                  placeholder="Konfirmasi kata sandi Anda"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -231,12 +243,12 @@ export default function RegisterPage() {
                   {passwordsMatch ? (
                     <>
                       <Check className="w-4 h-4 text-[#49cc90]" />
-                      <span className="text-[#49cc90]">Passwords match</span>
+                      <span className="text-[#49cc90]">Kata sandi cocok</span>
                     </>
                   ) : (
                     <>
                       <X className="w-4 h-4 text-red-500" />
-                      <span className="text-red-500">Passwords don't match</span>
+                      <span className="text-red-500">Kata sandi tidak cocok</span>
                     </>
                   )}
                 </div>
@@ -252,13 +264,13 @@ export default function RegisterPage() {
                 className="mt-1 rounded border-gray-300 text-[#49cc90] focus:ring-[#49cc90] focus:ring-offset-0"
               />
               <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-                I agree to the{" "}
+                Saya menyetujui{" "}
                 <a href="/terms" className="text-[#49cc90] hover:text-emerald-600 font-medium transition-colors duration-200">
-                  Terms of Service
+                  Syarat dan Ketentuan
                 </a>{" "}
-                and{" "}
+                serta{" "}
                 <a href="/privacy" className="text-[#49cc90] hover:text-emerald-600 font-medium transition-colors duration-200">
-                  Privacy Policy
+                  Kebijakan Privasi
                 </a>
               </label>
             </div>
@@ -271,10 +283,10 @@ export default function RegisterPage() {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Creating account...</span>
+                  <span>Membuat akun...</span>
                 </div>
               ) : (
-                "Create Account"
+                "Buat Akun"
               )}
             </Button>
           </form>
@@ -283,12 +295,12 @@ export default function RegisterPage() {
         <CardFooter className="pt-4">
           <div className="w-full text-center">
             <p className="text-gray-600 text-sm">
-              Already have an account?{" "}
+              Sudah memiliki akun?{" "}
               <a 
                 href="/login" 
                 className="text-[#49cc90] hover:text-emerald-600 font-semibold transition-colors duration-200 hover:underline"
               >
-                Sign in here
+                Masuk di sini
               </a>
             </p>
           </div>

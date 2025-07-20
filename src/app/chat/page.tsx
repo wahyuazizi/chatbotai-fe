@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Sparkles
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface Message {
   sender: "user" | "ai";
@@ -30,6 +31,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -121,8 +123,7 @@ export default function ChatPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/login");
+    logout();
   };
 
   const formatTime = (date: Date) => {

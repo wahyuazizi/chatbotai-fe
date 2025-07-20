@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import api from "@/lib/api";
+import api, { upload } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,16 +23,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const router = useRouter();
-  const { role } = useAuth();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-    } else if (role !== "admin") {
-      router.push("/chat");
-    }
-  }, [router, role]);
+  const { role, logout } = useAuth();
+  
+  const handleLogout = () => {
+    logout();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -76,9 +71,9 @@ export default function AdminPage() {
     }
 
     try {
-      const simulatedFilePath = `uploads/${fileToIngest.name}`;
-      await api.post("/data/ingest", { filePath: simulatedFilePath });
-      setIngestMessage(`PDF '${fileToIngest.name}' ingested successfully! (Simulated)`);
+      const { file_path } = await upload(fileToIngest);
+      await api.post("/data/ingest", { file_paths: [file_path] });
+      setIngestMessage(`PDF '${fileToIngest.name}' ingested successfully!`);
       setFileToIngest(null);
     } catch (err: any) {
       setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
@@ -103,7 +98,7 @@ export default function AdminPage() {
     }
 
     try {
-      await api.post("/data/ingest", { url: urlToIngest });
+      await api.post("/data/ingest", { urls: [urlToIngest] });
       setIngestMessage(`URL '${urlToIngest}' ingested successfully!`);
       setUrlToIngest("");
     } catch (err: any) {
@@ -114,11 +109,6 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/login");
   };
 
   return (
@@ -318,6 +308,9 @@ export default function AdminPage() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
     </div>
   );
 }
