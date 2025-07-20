@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ChatLayout({
@@ -8,13 +10,19 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return; // Wait until authentication state is loaded
+
+    if (!isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, loading, router]);
 
   if (loading || !isAuthenticated) {
-    // Render nothing or a loading spinner while auth is being checked
-    // or if the user is not authenticated.
-    return null;
+    return null; // Render nothing while loading or if not authenticated (before redirect)
   }
 
-  // Render children only if the user is confirmed to be authenticated.
   return <>{children}</>;
 }

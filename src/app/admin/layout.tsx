@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLayout({
@@ -7,14 +9,25 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { role, loading } = useAuth();
+  const { role, isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return; // Wait until authentication state is loaded
+
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    if (role !== 'admin') {
+      router.push('/chat');
+    }
+  }, [isAuthenticated, role, loading, router]);
 
   if (loading || role !== 'admin') {
-    // Render nothing or a loading spinner while auth is being checked
-    // or if the user is not an admin.
-    return null;
+    return null; // Render nothing while loading or if not an admin (before redirect)
   }
 
-  // Render children only if the user is a confirmed admin.
   return <>{children}</>;
 }
