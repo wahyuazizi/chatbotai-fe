@@ -20,7 +20,7 @@ api.interceptors.request.use(
   }
 );
 
-export const upload = async (file: File): Promise<{ file_path: string }> => {
+export const upload = async (file: File): Promise<{ message: string }> => {
   const formData = new FormData();
   formData.append("file", file);
 

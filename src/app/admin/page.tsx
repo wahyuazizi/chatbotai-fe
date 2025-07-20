@@ -71,9 +71,8 @@ export default function AdminPage() {
     }
 
     try {
-      const { file_path } = await upload(fileToIngest);
-      await api.post("/data/ingest", { file_paths: [file_path] });
-      setIngestMessage(`PDF '${fileToIngest.name}' ingested successfully!`);
+      const response = await upload(fileToIngest);
+      setIngestMessage(response.message || `PDF '${fileToIngest.name}' uploaded and ingestion started!`);
       setFileToIngest(null);
     } catch (err: any) {
       setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
