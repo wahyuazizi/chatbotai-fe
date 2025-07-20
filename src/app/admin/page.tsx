@@ -5,32 +5,15 @@ import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  Upload, 
-  Link, 
-  FileText, 
-  Globe, 
-  Shield, 
-  LogOut, 
-  CheckCircle, 
-  AlertCircle, 
-  Loader2,
-  Settings,
-  Database,
-  Activity,
-  Users,
-  BarChart3
-} from "lucide-react";
+import { Upload, Link, LogOut, FileText, Globe, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function AdminPage() {
   const [fileToIngest, setFileToIngest] = useState<File | null>(null);
@@ -38,13 +21,7 @@ export default function AdminPage() {
   const [ingestMessage, setIngestMessage] = useState("");
   const [ingestError, setIngestError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [stats, setStats] = useState({
-    totalDocuments: 127,
-    totalUsers: 45,
-    activeIngestions: 3,
-    systemHealth: 98.5
-  });
+  const [dragActive, setDragActive] = useState(false);
   const router = useRouter();
   const { role } = useAuth();
 
@@ -63,23 +40,26 @@ export default function AdminPage() {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(false);
+    e.stopPropagation();
+    setDragActive(false);
     
-    const files = e.dataTransfer.files;
-    if (files && files[0] && files[0].type === "application/pdf") {
-      setFileToIngest(files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type === "application/pdf") {
+        setFileToIngest(file);
+      }
     }
   };
 
@@ -98,15 +78,8 @@ export default function AdminPage() {
     try {
       const simulatedFilePath = `uploads/${fileToIngest.name}`;
       await api.post("/data/ingest", { filePath: simulatedFilePath });
-      setIngestMessage(`PDF '${fileToIngest.name}' ingested successfully!`);
+      setIngestMessage(`PDF '${fileToIngest.name}' ingested successfully! (Simulated)`);
       setFileToIngest(null);
-      
-      // Update stats
-      setStats(prev => ({
-        ...prev,
-        totalDocuments: prev.totalDocuments + 1,
-        activeIngestions: prev.activeIngestions + 1
-      }));
     } catch (err: any) {
       setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
       if (err.response?.status === 401) {
@@ -133,13 +106,6 @@ export default function AdminPage() {
       await api.post("/data/ingest", { url: urlToIngest });
       setIngestMessage(`URL '${urlToIngest}' ingested successfully!`);
       setUrlToIngest("");
-      
-      // Update stats
-      setStats(prev => ({
-        ...prev,
-        totalDocuments: prev.totalDocuments + 1,
-        activeIngestions: prev.activeIngestions + 1
-      }));
     } catch (err: any) {
       setIngestError(err.response?.data?.message || "Failed to ingest URL data");
       if (err.response?.status === 401) {
@@ -156,202 +122,137 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#49cc90]/10 via-white to-emerald-50 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#49cc90]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-300/5 rounded-full blur-3xl"></div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
       {/* Header */}
-      <header className="relative z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#49cc90] to-emerald-500 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
+      <div className="sticky top-0 z-10 backdrop-blur-md bg-white/80 border-b border-emerald-100">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                <Upload className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-[#49cc90] to-emerald-600 bg-clip-text text-transparent">
-                  Admin Dashboard
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+                  Admin Panel
                 </h1>
-                <p className="text-sm text-gray-600">Data Management & Analytics</p>
+                <p className="text-sm text-gray-500">Data Management Center</p>
               </div>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-6 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Activity className="w-4 h-4 text-[#49cc90]" />
-                  <span className="text-gray-600">System Health: {stats.systemHealth}%</span>
-                </div>
-              </div>
-              
-              <Button 
-                onClick={handleLogout} 
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Documents</p>
-                  <p className="text-2xl font-bold text-[#49cc90]">{stats.totalDocuments}</p>
-                </div>
-                <Database className="w-8 h-8 text-[#49cc90]/60" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Active Users</p>
-                  <p className="text-2xl font-bold text-emerald-600">{stats.totalUsers}</p>
-                </div>
-                <Users className="w-8 h-8 text-emerald-600/60" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Active Ingestions</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.activeIngestions}</p>
-                </div>
-                <BarChart3 className="w-8 h-8 text-blue-600/60" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">System Health</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.systemHealth}%</p>
-                </div>
-                <Activity className="w-8 h-8 text-green-600/60" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
+      {/* Content */}
+      <div className="container mx-auto px-6 py-8">
         {/* Status Messages */}
-        {ingestMessage && (
-          <div className="mb-6 p-4 bg-[#49cc90]/10 border border-[#49cc90]/20 rounded-lg animate-slide-down">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-[#49cc90]" />
-              <p className="text-[#49cc90] font-medium">{ingestMessage}</p>
-            </div>
-          </div>
-        )}
-        
-        {ingestError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg animate-shake">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <p className="text-red-600 font-medium">{ingestError}</p>
-            </div>
+        {(ingestMessage || ingestError) && (
+          <div className="mb-8 animate-in slide-in-from-top-2 duration-300">
+            {ingestMessage && (
+              <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-emerald-700">
+                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                <span>{ingestMessage}</span>
+              </div>
+            )}
+            {ingestError && (
+              <div className="flex items-center space-x-2 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+                <span>{ingestError}</span>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* PDF Ingest Card */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
+        {/* Cards Grid */}
+        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* PDF Upload Card */}
+          <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white/70 backdrop-blur-sm">
             <CardHeader className="pb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-[#49cc90] to-emerald-500 rounded-xl flex items-center justify-center">
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-12 h-12 bg-gradient-to-r from-emerald-400 to-green-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-gray-800">PDF Document Ingestion</CardTitle>
-                  <CardDescription className="text-gray-600 mt-1">
-                    Upload PDF files for AI processing and analysis
+                  <CardTitle className="text-xl text-gray-800">PDF Upload</CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Upload PDF documents for processing
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            
             <CardContent className="space-y-6">
               <form onSubmit={handleIngestPdf} className="space-y-6">
-                <div>
-                  <label htmlFor="pdf-file" className="block text-sm font-semibold text-gray-700 mb-3">
-                    Select PDF Document
-                  </label>
-                  
-                  {/* Drag & Drop Area */}
-                  <div
-                    className={`relative border-2 border-dashed rounded-xl p-8 transition-all duration-200 text-center ${
-                      isDragging 
-                        ? 'border-[#49cc90] bg-[#49cc90]/5' 
-                        : 'border-gray-300 hover:border-[#49cc90]/50 hover:bg-gray-50'
-                    }`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-[#49cc90]' : 'text-gray-400'}`} />
-                    
-                    {fileToIngest ? (
-                      <div className="space-y-2">
-                        <p className="text-[#49cc90] font-medium">{fileToIngest.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {(fileToIngest.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-gray-600 font-medium">
-                          Drag & drop your PDF here, or click to browse
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Supports PDF files up to 50MB
-                        </p>
-                      </div>
-                    )}
-                    
-                    <Input
-                      id="pdf-file"
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileChange}
-                      disabled={loading}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
+                {/* Drag & Drop Area */}
+                <div
+                  className={`relative border-2 border-dashed rounded-xl p-8 transition-all duration-300 ${
+                    dragActive
+                      ? "border-emerald-400 bg-emerald-50"
+                      : "border-gray-300 hover:border-emerald-300 hover:bg-emerald-50/50"
+                  }`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <div className="text-center">
+                    <Upload className={`mx-auto h-12 w-12 transition-colors duration-300 ${
+                      dragActive ? "text-emerald-500" : "text-gray-400"
+                    }`} />
+                    <div className="mt-4">
+                      <label htmlFor="pdf-file" className="cursor-pointer">
+                        <span className="text-lg font-medium text-emerald-600 hover:text-emerald-500">
+                          Choose a PDF file
+                        </span>
+                        <span className="text-gray-500"> or drag and drop</span>
+                      </label>
+                      <Input
+                        id="pdf-file"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        disabled={loading}
+                        className="sr-only"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">PDF files only</p>
                   </div>
+                  
+                  {fileToIngest && (
+                    <div className="mt-4 p-3 bg-white rounded-lg border border-emerald-200 animate-in slide-in-from-bottom-2 duration-200">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-4 h-4 text-emerald-500" />
+                        <span className="text-sm font-medium text-gray-700 truncate">
+                          {fileToIngest.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          ({(fileToIngest.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 bg-gradient-to-r from-[#49cc90] to-emerald-500 hover:from-[#3ba876] hover:to-emerald-600 text-white font-semibold shadow-lg shadow-[#49cc90]/25 hover:shadow-xl hover:shadow-[#49cc90]/30 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" 
+
+                <Button
+                  type="submit"
                   disabled={loading || !fileToIngest}
+                  className="w-full h-12 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-medium rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Processing Document...</span>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Processing...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <Upload className="w-5 h-5" />
-                      <span>Ingest PDF Document</span>
+                      <Upload className="w-4 h-4" />
+                      <span>Upload PDF</span>
                     </div>
                   )}
                 </Button>
@@ -359,60 +260,56 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
-          {/* URL Ingest Card */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
+          {/* URL Input Card */}
+          <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white/70 backdrop-blur-sm">
             <CardHeader className="pb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-12 h-12 bg-gradient-to-r from-emerald-400 to-green-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Globe className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-gray-800">Web URL Ingestion</CardTitle>
-                  <CardDescription className="text-gray-600 mt-1">
-                    Extract and process content from web URLs
+                  <CardTitle className="text-xl text-gray-800">URL Ingestion</CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Process content from web URLs
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            
             <CardContent className="space-y-6">
               <form onSubmit={handleIngestUrl} className="space-y-6">
-                <div>
-                  <label htmlFor="url-input" className="block text-sm font-semibold text-gray-700 mb-3">
+                <div className="space-y-2">
+                  <label htmlFor="url-input" className="text-sm font-medium text-gray-700">
                     Website URL
                   </label>
                   <div className="relative">
-                    <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
                       id="url-input"
                       type="url"
-                      placeholder="https://example.com/article"
+                      placeholder="https://example.com/document"
                       value={urlToIngest}
                       onChange={(e) => setUrlToIngest(e.target.value)}
                       disabled={loading}
                       required
-                      className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                      className="pl-10 h-12 border-gray-300 focus:border-emerald-400 focus:ring-emerald-400 rounded-xl transition-all duration-200"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Enter a valid URL to extract and process web content
-                  </p>
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" 
+
+                <Button
+                  type="submit"
                   disabled={loading || !urlToIngest.trim()}
+                  className="w-full h-12 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-medium rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Processing URL...</span>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Processing...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <Globe className="w-5 h-5" />
-                      <span>Ingest Web Content</span>
+                      <Globe className="w-4 h-4" />
+                      <span>Process URL</span>
                     </div>
                   )}
                 </Button>
@@ -420,55 +317,7 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
-            <CardContent className="p-6 text-center">
-              <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400 group-hover:text-[#49cc90] transition-colors duration-200" />
-              <h3 className="font-semibold text-gray-800 mb-2">System Settings</h3>
-              <p className="text-sm text-gray-600">Configure ingestion parameters and system preferences</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
-            <CardContent className="p-6 text-center">
-              <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
-              <h3 className="font-semibold text-gray-800 mb-2">Analytics Dashboard</h3>
-              <p className="text-sm text-gray-600">View detailed analytics and usage statistics</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
-            <CardContent className="p-6 text-center">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200" />
-              <h3 className="font-semibold text-gray-800 mb-2">User Management</h3>
-              <p className="text-sm text-gray-600">Manage user accounts and access permissions</p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes slide-down {
-          0% { opacity: 0; transform: translateY(-10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        
-        .animate-slide-down {
-          animation: slide-down 0.3s ease-out;
-        }
-        
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }
