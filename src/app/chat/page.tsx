@@ -31,14 +31,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
-  const { logout } = useAuth();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-    }
-  }, [router]);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,9 +86,7 @@ export default function ChatPage() {
           timestamp: new Date()
         },
       ]);
-      if (error.response?.status === 401) {
-        router.push("/login");
-      }
+      
     } finally {
       setLoading(false);
     }
@@ -158,15 +149,26 @@ export default function ChatPage() {
                 Clear
               </Button>
             )}
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:text-red-800 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4 mr-1" />
-              Logout
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-1" />
+                Logout
+              </Button>
+            ) : (
+              <Button
+                onClick={() => router.push("/login")}
+                variant="ghost"
+                size="sm"
+                className="text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50"
+              >
+                Login
+              </Button>
+            )}
           </div>
         </div>
       </header>
