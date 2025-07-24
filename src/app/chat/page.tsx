@@ -134,7 +134,7 @@ export default function ChatPage() {
               <h1 className="text-xl font-semibold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
                 Campus Assistant
               </h1>
-              <p className="text-sm text-gray-500">Powered by Microsoft Azure</p>
+              
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -185,7 +185,7 @@ export default function ChatPage() {
                 Selamat Datang di Campus Assistant! 🎓
               </h2>
               <p className="text-gray-600 max-w-lg text-lg leading-relaxed mb-6">
-                Halo! Saya adalah asisten virtual kampus yang siap membantu Anda mendapatkan informasi seputar kampus menggunakan teknologi <strong>RAG (Retrieval-Augmented Generation)</strong>.
+                Hai! Butuh info seputar kampus? Tanya aja di sini, siap bantu kamu cari jawabannya!
               </p>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 max-w-2xl">
                 <h3 className="text-lg font-semibold text-emerald-800 mb-3">
@@ -219,7 +219,7 @@ export default function ChatPage() {
                 </div>
               </div>
               <p className="text-sm text-gray-500 mt-6">
-                🚀 Didukung oleh <strong>Microsoft Azure</strong> untuk pengalaman terbaik
+                
               </p>
             </div>
           ) : (
