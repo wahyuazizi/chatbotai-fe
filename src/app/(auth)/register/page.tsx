@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 import { Mail, Lock, Eye, EyeOff, Loader2, User, UserPlus, Check, X } from "lucide-react";
 
 export default function RegisterPage() {
@@ -119,12 +120,19 @@ export default function RegisterPage() {
       {/* Main Card */}
       <Card className="w-full max-w-lg relative z-10 backdrop-blur-sm bg-white/80 border-0 shadow-2xl shadow-[#49cc90]/10 animate-slide-up">
         <CardHeader className="text-center pb-6">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-[#49cc90] to-emerald-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-[#49cc90]/25 animate-pulse-soft">
-            <UserPlus className="w-8 h-8 text-white" />
+          <div className="mx-auto w-24 h-24 mb-6">
+            <Image
+              src="/logo_fakultas.png"
+              alt="Logo Fakultas"
+              width={96}
+              height={96}
+              className="object-contain"
+            />
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-[#49cc90] to-emerald-600 bg-clip-text text-transparent">
             Daftar Akun
           </CardTitle>
+          <p className="text-gray-600 mt-2 font-semibold">Fakultas Teknik Universitas Hamzanwadi</p>
           <CardDescription className="text-gray-600 mt-2">
             Buat akun untuk menggunakan chatbot kampus
           </CardDescription>

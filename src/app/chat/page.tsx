@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Sparkles
 } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
 interface Message {
@@ -127,13 +128,20 @@ export default function ChatPage() {
       <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-gray-200/50 px-4 py-3">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-10 h-10">
+              <Image
+                src="/logo_fakultas.png"
+                alt="Logo Fakultas"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
             </div>
             <div>
               <h1 className="text-xl font-semibold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
                 Campus Assistant
               </h1>
+              <p className="text-sm text-gray-500">Fakultas Teknik Universitas Hamzanwadi</p>
               
             </div>
           </div>
@@ -178,8 +186,14 @@ export default function ChatPage() {
         <div className="max-w-4xl mx-auto px-4 py-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-20">
-              <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-green-100 rounded-full flex items-center justify-center mb-6 shadow-lg">
-                <MessageSquare className="w-12 h-12 text-emerald-600" />
+              <div className="w-24 h-24 mb-6">
+                <Image
+                  src="/logo_fakultas.png"
+                  alt="Logo Fakultas"
+                  width={96}
+                  height={96}
+                  className="object-contain"
+                />
               </div>
               <h2 className="text-3xl font-bold text-gray-800 mb-3">
                 Selamat Datang di Campus Assistant! 🎓
@@ -234,12 +248,18 @@ export default function ChatPage() {
                     <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                       msg.sender === "user" 
                         ? "bg-gradient-to-r from-emerald-500 to-green-500" 
-                        : "bg-gradient-to-r from-gray-600 to-gray-700"
+                        : ""
                     }`}>
                       {msg.sender === "user" ? (
                         <User className="w-4 h-4 text-white" />
                       ) : (
-                        <Bot className="w-4 h-4 text-white" />
+                        <Image
+                          src="/logo_fakultas.png"
+                          alt="Logo Fakultas"
+                          width={32}
+                          height={32}
+                          className="rounded-full object-contain"
+                        />
                       )}
                     </div>
 

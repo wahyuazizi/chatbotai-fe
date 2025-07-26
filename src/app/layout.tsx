@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chatbot AI",
-  description: "AI Chatbot Application",
+  title: "Campus Assistant - Fakultas Teknik Universitas Hamzanwadi",
+  description: "Chatbot AI untuk Fakultas Teknik Universitas Hamzanwadi",
 };
 
 export default function RootLayout({

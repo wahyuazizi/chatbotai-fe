@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -74,12 +75,19 @@ export default function LoginPage() {
       {/* Main Card */}
       <Card className="w-full max-w-md relative z-10 backdrop-blur-sm bg-white/80 border-0 shadow-2xl shadow-[#49cc90]/10 animate-slide-up">
         <CardHeader className="text-center pb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-[#49cc90] to-emerald-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-[#49cc90]/25 animate-pulse-soft">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="mx-auto w-24 h-24 mb-6">
+            <Image
+              src="/logo_fakultas.png"
+              alt="Logo Fakultas"
+              width={96}
+              height={96}
+              className="object-contain"
+            />
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-[#49cc90] to-emerald-600 bg-clip-text text-transparent">
             Selamat Datang
           </CardTitle>
+          <p className="text-gray-600 mt-2 font-semibold">Fakultas Teknik Universitas Hamzanwadi</p>
           <CardDescription className="text-gray-600 mt-2">
             Masuk untuk menggunakan chatbot kampus
           </CardDescription>
