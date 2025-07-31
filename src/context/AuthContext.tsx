@@ -3,6 +3,8 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { supabase } from "@/lib/supabase";
+
 interface AuthContextType {
   isAuthenticated: boolean;
   role: string | null;
@@ -25,54 +27,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   console.log(`AuthContext Instance ${instanceId}: Rendered.`);
 
   useEffect(() => {
-    console.log(`AuthContext Instance ${instanceId}: Initializing auth state...`);
-    const token = localStorage.getItem('token');
-    const userRole = localStorage.getItem('role');
-
-    if (token && userRole) {
-      setIsAuthenticated(true);
-      setRole(userRole);
-      console.log(`AuthContext Instance ${instanceId}: User authenticated. Role:`, userRole);
-    } else {
-      setIsAuthenticated(false);
-      setRole(null);
-      console.log(`AuthContext Instance ${instanceId}: User not authenticated.`);
-    }
-    setLoading(false);
-    console.log(`AuthContext Instance ${instanceId}: Loading complete.`);
+    console.log(`AuthContext Instance ${instanceId}: Initializing auth state with Supabase...`);
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(`AuthContext Instance ${instanceId}: Auth state changed:`, event, session);
+      if (session) {
+        setIsAuthenticated(true);
+        // You might need to fetch user metadata or roles from your backend/database
+        // For now, we'll assume role is part of user_metadata or fetched separately
+        // If role is not directly in session, you'll need to adjust this.
+        const userRole = session.user?.user_metadata?.role || null; // Adjust based on your Supabase setup
+        setRole(userRole);
+        console.log(`AuthContext Instance ${instanceId}: User authenticated. Role:`, userRole);
+      } else {
+        setIsAuthenticated(false);
+        setRole(null);
+        console.log(`AuthContext Instance ${instanceId}: User not authenticated.`);
+      }
+      setLoading(false);
+    });
 
     return () => {
-      console.log(`AuthContext Instance ${instanceId}: Unmounting.`);
+      authListener.unsubscribe();
+      console.log(`AuthContext Instance ${instanceId}: Unmounting and unsubscribing.`);
     };
   }, []);
 
+  // Handle redirection based on auth state
+  useEffect(() => {
+    if (!loading) {
+      if (isAuthenticated) {
+        const redirectTo = (role === "admin" || role === "user") ? "/chat" : "/admin"; // Temporary: Allow admin to access chat for testing
+        if (router.pathname !== redirectTo) { // Prevent unnecessary redirects
+          router.push(redirectTo);
+        }
+      } else {
+        // Only redirect to login if not already on login or register page
+        if (router.pathname !== "/login" && router.pathname !== "/register") {
+          router.push("/login");
+        }
+      }
+    }
+  }, [isAuthenticated, role, loading, router]);
+
   const login = (token: string, userRole: string) => {
-    console.log(`AuthContext Instance ${instanceId}: Login function called.`);
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', userRole);
-    setIsAuthenticated(true);
-    setRole(userRole);
-    console.log(`AuthContext Instance ${instanceId}: Token and role set in localStorage. State updated.`);
-    // Redirect after login
-    const redirectTo = userRole === 'admin' ? '/admin' : '/chat';
-    console.log(`AuthContext Instance ${instanceId}: Login successful. Redirecting to ${redirectTo}`);
-    router.push(redirectTo);
+    // This login function might become redundant if login is handled directly by Supabase methods
+    // in the login page. The onAuthStateChange listener will update the context.
+    console.log(`AuthContext Instance ${instanceId}: Login function called (might be redundant).`);
+    // No direct action needed here as onAuthStateChange will pick up the session.
   };
 
-  const logout = () => {
+  const logout = async () => {
     console.log(`AuthContext Instance ${instanceId}: Logout function called.`);
-    // Clear localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    // Reset state
-    setIsAuthenticated(false);
-    setRole(null);
-    // Use window.location.href for full reload
-    console.log(`AuthContext Instance ${instanceId}: All localStorage items cleared.`);
-    console.log(`AuthContext Instance ${instanceId}: localStorage token after clear:`, localStorage.getItem('token'));
-    console.log(`AuthContext Instance ${instanceId}: localStorage role after clear:`, localStorage.getItem('role'));
-    console.log(`AuthContext Instance ${instanceId}: Forcing full page reload to /login.`);
-    window.location.href = '/login';
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error during Supabase logout:", error);
+    }
+    // Supabase's onAuthStateChange will handle setting isAuthenticated to false
+    // and redirecting will be handled by the useEffect in this context or router.push in the component.
+    console.log(`AuthContext Instance ${instanceId}: Supabase signOut called.`);
+    router.push('/login'); // Redirect to login page after logout
   };
 
   return (

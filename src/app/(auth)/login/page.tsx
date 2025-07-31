@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,15 +26,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, role, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      if (role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/chat");
-      }
-    }
-  }, [isAuthenticated, role, loading, router]);
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,15 +34,24 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const response = await api.post("/auth/login", { email, password });
-      console.log("Login successful, response:", response);
-      const { access_token, role } = response.data; // Extract access_token and role
-      login(access_token, role);
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // No need for explicit router.push here, AuthContext will handle it
+      if (authError) {
+        throw authError;
+      }
+
+      console.log("Login successful with Supabase:", data);
+      // AuthContext will now listen to Supabase's auth state changes
+      // No need to call login(access_token, role) here directly,
+      // as AuthContext will handle it via onAuthStateChange.
+      // The redirect will also be handled by AuthContext.
+
     } catch (err: any) {
       console.error("Login failed, error:", err);
-      setError(err.response?.data?.message || "Login gagal");
+      setError(err.message || "Login gagal");
     } finally {
       setIsLoading(false);
     }

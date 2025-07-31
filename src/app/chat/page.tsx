@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import api from "@/lib/api";
+import { sendMessage } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,10 +70,10 @@ export default function ChatPage() {
     }
 
     try {
-      const response = await api.post("/chat", { query: input.trim() });
+      const response = await sendMessage(input.trim());
       const aiMessage: Message = { 
         sender: "ai", 
-        text: response.data.answer,
+        text: response.answer,
         timestamp: new Date()
       };
       setMessages((prev) => [...prev, aiMessage]);
