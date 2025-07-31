@@ -23,7 +23,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const router = useRouter();
-  const { role, logout } = useAuth();
+  const { role, logout, authToken } = useAuth();
   
   const handleLogout = () => {
     logout();
@@ -71,7 +71,7 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await upload(fileToIngest);
+      const response = await upload([fileToIngest], authToken);
       setIngestMessage(response.message || `PDF '${fileToIngest.name}' uploaded and ingestion started!`);
       setFileToIngest(null);
     } catch (err: any) {

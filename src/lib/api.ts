@@ -15,7 +15,9 @@ api.interceptors.request.use(
     // This interceptor is for the backend's custom token, if any.
     // For Supabase Auth, the token is added directly in sendMessage.
     const token = localStorage.getItem("token"); // This might be from a custom backend auth
-    if (token) {
+    // Only add Authorization header from localStorage if it's not an upload request
+    // as upload function handles its own authToken.
+    if (token && config.url !== '/data/upload') {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -25,14 +27,14 @@ api.interceptors.request.use(
   }
 );
 
-export const upload = async (file: File): Promise<{ message: string }> => {
+export const upload = async (files: FileList | File[], authToken: string | null): Promise<{ message: string }> => {
   const formData = new FormData();
-  formData.append("file", file);
+  for (let i = 0; i < files.length; i++) {
+    formData.append("files", files[i]);
+  }
 
   const response = await api.post("/data/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
   });
   return response.data;
 };
