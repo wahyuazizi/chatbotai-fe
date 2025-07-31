@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 import { supabase } from "@/lib/supabase";
 
@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const instanceId = useRef(instanceCount++).current;
 
   console.log(`AuthContext Instance ${instanceId}: Rendered.`);
@@ -56,18 +57,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!loading) {
       if (isAuthenticated) {
-        const redirectTo = (role === "admin" || role === "user") ? "/chat" : "/admin"; // Temporary: Allow admin to access chat for testing
-        if (router.pathname !== redirectTo) { // Prevent unnecessary redirects
-          router.push(redirectTo);
+        // Redirect admin to /admin, but allow access to /chat
+        if (role === 'admin' && pathname !== '/admin' && pathname !== '/chat') {
+          router.push('/admin');
+        } else if (role !== 'admin' && pathname !== '/chat') {
+          router.push('/chat');
         }
       } else {
-        // Only redirect to login if not already on login or register page
-        if (router.pathname !== "/login" && router.pathname !== "/register") {
-          router.push("/login");
+        // If not authenticated, redirect to login page, but not if already on public pages.
+        const publicPages = ['/login', '/register', '/reset-password'];
+        if (!publicPages.includes(pathname)) {
+          router.push('/login');
         }
       }
     }
-  }, [isAuthenticated, role, loading, router]);
+  }, [isAuthenticated, role, loading, router, pathname]);
 
   const login = (token: string, userRole: string) => {
     // This login function might become redundant if login is handled directly by Supabase methods

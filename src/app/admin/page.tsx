@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import { Upload, Link, LogOut, FileText, Globe, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, Link, LogOut, FileText, Globe, CheckCircle, AlertCircle, MessageSquare } from "lucide-react";
 
 export default function AdminPage() {
   const [fileToIngest, setFileToIngest] = useState<File | null>(null);
@@ -127,14 +127,24 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-500">Data Management Center</p>
               </div>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => router.push('/chat')}
+                variant="outline"
+                className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Open Chat
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>
