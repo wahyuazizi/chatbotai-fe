@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { sendMessage } from "@/lib/api";
+import { sendMessage, getChatHistory, clearChatHistory } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +21,61 @@ import { useAuth } from "@/context/AuthContext";
 interface Message {
   sender: "user" | "ai";
   text: string;
-  timestamp: Date;
+  timestamp: string; // Changed to string to match backend response
 }
+
+const SESSION_ID_KEY = 'chatSessionId';
+const CHAT_HISTORY_KEY = 'chatHistory';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, loading: authLoading } = useAuth();
+
+  // Load chat history from Supabase on component mount, with localStorage as a fallback
+  useEffect(() => {
+    if (!authLoading) {
+      const loadHistory = async () => {
+        try {
+          const backendHistory = await getChatHistory();
+          // If backend has history, it's the source of truth
+          if (backendHistory && backendHistory.length > 0) {
+            setMessages(backendHistory);
+          } else {
+            // If backend is empty, try to load from local storage
+            const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
+            if (savedMessages) {
+              setMessages(JSON.parse(savedMessages).map((msg: any) => ({...msg, timestamp: new Date(msg.timestamp)})));
+            }
+          }
+        } catch (error) {
+          // If backend request fails, fall back to local storage
+          console.error("Failed to load chat history from Supabase, falling back to localStorage:", error);
+          const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
+          if (savedMessages) {
+            setMessages(JSON.parse(savedMessages).map((msg: any) => ({...msg, timestamp: new Date(msg.timestamp)})));
+          }
+        } finally {
+          setIsHistoryLoaded(true);
+        }
+      };
+
+      loadHistory();
+    }
+  }, [authLoading]);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (isHistoryLoaded) {
+      localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
+    }
+  }, [messages, isHistoryLoaded]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -110,8 +153,15 @@ export default function ChatPage() {
     }
   };
 
-  const clearChat = () => {
+  const clearChat = async () => {
     setMessages([]);
+    try {
+      await clearChatHistory();
+      localStorage.removeItem(CHAT_HISTORY_KEY);
+      localStorage.removeItem(SESSION_ID_KEY); // Clear session_id from localStorage as well
+    } catch (error) {
+      console.error("Failed to clear chat history:", error);
+    }
   };
 
   const handleLogout = () => {

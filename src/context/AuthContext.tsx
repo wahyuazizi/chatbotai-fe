@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     console.log(`AuthContext Instance ${instanceId}: Initializing auth state with Supabase...`);
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log(`AuthContext Instance ${instanceId}: Auth state changed:`, event, session);
       if (session) {
         setIsAuthenticated(true);
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
-      authListener.unsubscribe();
+      subscription.unsubscribe();
       console.log(`AuthContext Instance ${instanceId}: Unmounting and unsubscribing.`);
     };
   }, []);
