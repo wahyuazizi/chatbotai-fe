@@ -24,12 +24,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
 =======
     console.log(`AuthContext Instance ${instanceId}: Initializing auth state with Supabase...`);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log(`AuthContext Instance ${instanceId}: Auth state changed:`, event, session);
 >>>>>>> 8921421 (update chat hostory2)
+=======
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+>>>>>>> 1eea4ea (update context)
       if (session) {
         setIsAuthenticated(true);
         const userRole = session.user?.user_metadata?.role || null;
@@ -44,9 +48,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       console.log(`AuthContext Instance ${instanceId}: Unmounting and unsubscribing.`);
 >>>>>>> 8921421 (update chat hostory2)
+=======
+>>>>>>> 1eea4ea (update context)
     };
   }, []);
 
