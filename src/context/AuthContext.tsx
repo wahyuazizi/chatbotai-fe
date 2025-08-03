@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useMemo, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 import { supabase } from "@/lib/supabase";
@@ -15,41 +15,28 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-let instanceCount = 0;
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const instanceId = useRef(instanceCount++).current;
-
-  console.log(`AuthContext Instance ${instanceId}: Rendered.`);
 
   useEffect(() => {
-    console.log(`AuthContext Instance ${instanceId}: Initializing auth state with Supabase...`);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(`AuthContext Instance ${instanceId}: Auth state changed:`, event, session);
       if (session) {
         setIsAuthenticated(true);
-        // You might need to fetch user metadata or roles from your backend/database
-        // For now, we'll assume role is part of user_metadata or fetched separately
-        // If role is not directly in session, you'll need to adjust this.
-        const userRole = session.user?.user_metadata?.role || null; // Adjust based on your Supabase setup
+        const userRole = session.user?.user_metadata?.role || null;
         setRole(userRole);
-        console.log(`AuthContext Instance ${instanceId}: User authenticated. Role:`, userRole);
       } else {
         setIsAuthenticated(false);
         setRole(null);
-        console.log(`AuthContext Instance ${instanceId}: User not authenticated.`);
       }
       setLoading(false);
     });
 
     return () => {
       subscription.unsubscribe();
-      console.log(`AuthContext Instance ${instanceId}: Unmounting and unsubscribing.`);
     };
   }, []);
 
@@ -73,27 +60,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthenticated, role, loading, router, pathname]);
 
-  const login = (token: string, userRole: string) => {
-    // This login function might become redundant if login is handled directly by Supabase methods
-    // in the login page. The onAuthStateChange listener will update the context.
-    console.log(`AuthContext Instance ${instanceId}: Login function called (might be redundant).`);
-    // No direct action needed here as onAuthStateChange will pick up the session.
-  };
+  const login = useCallback((token: string, userRole: string) => {
+    // This function is mostly a placeholder as onAuthStateChange handles the logic.
+  }, []);
 
-  const logout = async () => {
-    console.log(`AuthContext Instance ${instanceId}: Logout function called.`);
+  const logout = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error during Supabase logout:", error);
     }
-    // Supabase's onAuthStateChange will handle setting isAuthenticated to false
-    // and redirecting will be handled by the useEffect in this context or router.push in the component.
-    console.log(`AuthContext Instance ${instanceId}: Supabase signOut called.`);
-    router.push('/login'); // Redirect to login page after logout
-  };
+    router.push('/login');
+  }, [router]);
+
+  const value = useMemo(() => ({
+    isAuthenticated,
+    role,
+    loading,
+    login,
+    logout
+  }), [isAuthenticated, role, loading, login, logout]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, role, loading, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
