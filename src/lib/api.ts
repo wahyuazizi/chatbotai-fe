@@ -11,14 +11,16 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(
-  (config) => {
-    // This interceptor is for the backend's custom token, if any.
-    // For Supabase Auth, the token is added directly in sendMessage.
-    const token = localStorage.getItem("token"); // This might be from a custom backend auth
-    // Only add Authorization header from localStorage if it's not an upload request
-    // as upload function handles its own authToken.
-    if (token && config.url !== '/data/upload') {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
+      }
+    } catch (error) {
+      console.error("Error getting Supabase session for API request:", error);
     }
     return config;
   },
@@ -27,14 +29,14 @@ api.interceptors.request.use(
   }
 );
 
-export const upload = async (files: FileList | File[], authToken: string | null): Promise<{ message: string }> => {
+export const upload = async (file: File): Promise<{ message: string }> => {
   const formData = new FormData();
-  for (let i = 0; i < files.length; i++) {
-    formData.append("files", files[i]);
-  }
+  formData.append("file", file);
 
   const response = await api.post("/data/upload", formData, {
-    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
   return response.data;
 };
@@ -198,4 +200,8 @@ export const clearChatHistory = async (): Promise<void> => {
     console.error("Error clearing chat history:", error);
     throw error;
   }
+};
+
+export const getSessionId = (): string | null => {
+  return localStorage.getItem(SESSION_ID_KEY);
 };
