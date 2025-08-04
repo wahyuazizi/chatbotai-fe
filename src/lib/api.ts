@@ -11,12 +11,16 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(
-  (config) => {
-    // This interceptor is for the backend's custom token, if any.
-    // For Supabase Auth, the token is added directly in sendMessage.
-    const token = localStorage.getItem("token"); // This might be from a custom backend auth
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
+      }
+    } catch (error) {
+      console.error("Error getting Supabase session for API request:", error);
     }
     return config;
   },
