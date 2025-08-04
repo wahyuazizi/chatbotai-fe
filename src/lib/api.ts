@@ -160,7 +160,7 @@ interface Message {
 }
 
 export const clearChatHistory = async (): Promise<void> => {
-  const apiEndpoint = "http://127.0.0.1:8000/api/v1/chat/clear"; // Ganti dengan URL API untuk menghapus riwayat chat
+  const apiEndpoint = "https://chatbotai-fkbtcmapa2agh3cc.westus-01.azurewebsites.net/api/v1/chat/clear"; // Ganti dengan URL API untuk menghapus riwayat chat
 
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
 
