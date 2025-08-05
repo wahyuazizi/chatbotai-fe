@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   role: string | null;
   loading: boolean;
+  authToken: string | null;
   login: (token: string, role: string) => void;
   logout: () => void;
 }
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -28,9 +30,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated(true);
         const userRole = session.user?.user_metadata?.role || null;
         setRole(userRole);
+        setAuthToken(session.access_token);
       } else {
         setIsAuthenticated(false);
         setRole(null);
+        setAuthToken(null);
       }
       setLoading(false);
     });
@@ -76,9 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated,
     role,
     loading,
+    authToken,
     login,
     logout
-  }), [isAuthenticated, role, loading, login, logout]);
+  }), [isAuthenticated, role, loading, authToken, login, logout]);
 
   return (
     <AuthContext.Provider value={value}>
