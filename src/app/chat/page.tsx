@@ -49,7 +49,7 @@ export default function ChatPage() {
             // If backend is empty, try to load from local storage
             const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
             if (savedMessages) {
-              setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: new Date(msg.timestamp)})));
+              setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: msg.timestamp})));
             }
           }
         } catch (error) {
@@ -102,7 +102,7 @@ export default function ChatPage() {
     const userMessage: Message = { 
       sender: "user", 
       text: input.trim(),
-      timestamp: new Date()
+      timestamp: new Date().toISOString()
     };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -118,7 +118,7 @@ export default function ChatPage() {
       const aiMessage: Message = { 
         sender: "ai", 
         text: response.answer,
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
       };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
@@ -173,7 +173,8 @@ export default function ChatPage() {
     logout();
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 

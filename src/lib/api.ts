@@ -146,7 +146,7 @@ export const getChatHistory = async (): Promise<Message[]> => {
 
     return history.map(msg => ({
         ...msg,
-        timestamp: new Date(msg.timestamp),
+        timestamp: new Date(msg.timestamp).toISOString(),
     }));
   } catch (error) {
     console.error("Error fetching chat history:", error);
@@ -158,7 +158,7 @@ export const getChatHistory = async (): Promise<Message[]> => {
 interface Message {
   sender: "user" | "ai";
   text: string;
-  timestamp: Date; // Changed to Date object
+  timestamp: string; // Ensure this is a string
 }
 
 export const clearChatHistory = async (): Promise<void> => {
