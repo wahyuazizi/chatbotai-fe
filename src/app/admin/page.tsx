@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api, upload } from "@/lib/api";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,9 +75,9 @@ export default function AdminPage() {
       const response = await upload([fileToIngest], authToken);
       setIngestMessage(response.message || `PDF '${fileToIngest.name}' uploaded and ingestion started!`);
       setFileToIngest(null);
-    } catch (err: Error) {
-      setIngestError((err as any).response?.data?.message || "Failed to ingest PDF data");
-      if ((err as any).response?.status === 401) {
+    } catch (err: AxiosError) {
+      setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
+      if (err.response?.status === 401) {
         router.push("/login");
       }
     } finally {
@@ -100,9 +101,9 @@ export default function AdminPage() {
       await api.post("/data/ingest", { urls: [urlToIngest] });
       setIngestMessage(`URL '${urlToIngest}' ingested successfully!`);
       setUrlToIngest("");
-    } catch (err: Error) {
-      setIngestError((err as any).response?.data?.message || "Failed to ingest URL data");
-      if ((err as any).response?.status === 401) {
+    } catch (err: AxiosError) {
+      setIngestError(err.response?.data?.message || "Failed to ingest URL data");
+      if (err.response?.status === 401) {
         router.push("/login");
       }
     } finally {

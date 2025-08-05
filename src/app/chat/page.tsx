@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { sendMessage, getChatHistory, clearChatHistory } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { AxiosError } from "axios";
 import { 
   Send, 
   LogOut, 
@@ -51,12 +52,12 @@ export default function ChatPage() {
               setMessages(JSON.parse(savedMessages).map((msg: any) => ({...msg, timestamp: new Date(msg.timestamp)})));
             }
           }
-        } catch (error) {
+        } catch (error: AxiosError) {
           // If backend request fails, fall back to local storage
           console.error("Failed to load chat history from Supabase, falling back to localStorage:", error);
           const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
           if (savedMessages) {
-            setMessages(JSON.parse(savedMessages).map((msg: any) => ({...msg, timestamp: new Date(msg.timestamp)})));
+            setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: new Date(msg.timestamp)})));
           }
         } finally {
           setIsHistoryLoaded(true);
@@ -117,14 +118,14 @@ export default function ChatPage() {
         timestamp: new Date()
       };
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error: Error) {
+    } catch (error: AxiosError) {
       console.error("Error sending message:", error);
       setMessages((prev) => [
         ...prev,
         { 
           sender: "ai", 
           text: "Maaf, saya mengalami kendala saat memproses pertanyaan Anda. Silakan coba lagi.",
-          timestamp: new Date()
+          timestamp: new Date().toISOString()
         },
       ]);
       
