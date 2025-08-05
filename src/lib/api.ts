@@ -29,9 +29,11 @@ api.interceptors.request.use(
   }
 );
 
-export const upload = async (file: File): Promise<{ message: string }> => {
+export const upload = async (files: File[]): Promise<{ message: string }> => {
   const formData = new FormData();
-  formData.append("file", file);
+  files.forEach(file => {
+    formData.append("file", file);
+  });
 
   const response = await api.post("/data/upload", formData, {
     headers: {
