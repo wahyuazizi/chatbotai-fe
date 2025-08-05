@@ -24,7 +24,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const router = useRouter();
-  const { logout, authToken } = useAuth();
+  const { logout } = useAuth();
   
   const handleLogout = () => {
     logout();
