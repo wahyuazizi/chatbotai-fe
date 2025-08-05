@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 const SESSION_ID_KEY = 'chatSessionId';
 
 export const api = axios.create({
-  baseURL: "", // Set to empty string, we will prepend the full URL in each request
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "",
   headers: {
     "Content-Type": "application/json",
   },
@@ -35,7 +35,7 @@ export const upload = async (files: File[]): Promise<{ message: string }> => {
     formData.append("file", file);
   });
 
-  const response = await api.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/data/upload`, formData, {
+  const response = await api.post(`/api/v1/data/upload`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -66,7 +66,7 @@ export const sendMessage = async (userMessage: string): Promise<{ answer: string
   }
 
   try {
-    const response = await api.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat`, {
+    const response = await api.post(`/api/v1/chat`, {
       query: userMessage,
       session_id: currentSessionId,
     }, {
@@ -105,7 +105,7 @@ export const getChatHistory = async (): Promise<Message[]> => {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const url = currentSessionId ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat/history?session_id=${currentSessionId}` : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat/history`;
+  const url = currentSessionId ? `/api/v1/chat/history?session_id=${currentSessionId}` : `/api/v1/chat/history`;
 
   try {
     const response = await api.get(url, {
@@ -161,7 +161,7 @@ export const clearChatHistory = async (): Promise<void> => {
   }
 
   try {
-    await api.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat/clear`, {
+    await api.post(`/api/v1/chat/clear`, {
       session_id: currentSessionId,
     }, {
       headers: headers,

@@ -46,7 +46,7 @@ export default function RegisterPage() {
       // Assuming the API expects an object with email and password
       // And potentially a 'name' field, which we'll send as empty for now.
       // If the backend validation fails, this might need adjustment.
-      await api.post("/auth/register", { email, password, role: "user" });
+      await api.post("/api/v1/auth/register", { email, password, role: "user" });
       setIsSuccess(true);
     } catch (err: unknown) {
       if (isAxiosError(err)) {
