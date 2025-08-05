@@ -7,7 +7,6 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     router.push("/chat");
   }, [router]);
 

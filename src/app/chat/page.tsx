@@ -4,16 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { sendMessage, getChatHistory, clearChatHistory } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
   Send, 
   LogOut, 
   Bot, 
   User, 
   Copy, 
-  RotateCcw,
-  MessageSquare,
-  Sparkles
+  RotateCcw
 } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
@@ -120,7 +117,7 @@ export default function ChatPage() {
         timestamp: new Date()
       };
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error: any) {
+    } catch (error: Error) {
       console.error("Error sending message:", error);
       setMessages((prev) => [
         ...prev,

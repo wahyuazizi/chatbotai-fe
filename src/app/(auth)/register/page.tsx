@@ -47,7 +47,7 @@ export default function RegisterPage() {
       // If the backend validation fails, this might need adjustment.
       await api.post("/auth/register", { email, password, role: "user" });
       setIsSuccess(true);
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.response?.data?.message || "Pendaftaran gagal. Pastikan email belum terdaftar.");
     } finally {
       setIsLoading(false);

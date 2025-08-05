@@ -41,7 +41,7 @@ export const upload = async (file: File): Promise<{ message: string }> => {
   return response.data;
 };
 
-export const sendMessage = async (userMessage: string): Promise<any> => {
+export const sendMessage = async (userMessage: string): Promise<{ answer: string; session_id?: string }> => {
   const apiEndpoint = "http://127.0.0.1:8000/api/v1/chat"; // Ensure this is correct
 
   // 1. Baca session_id yang ada dari localStorage
@@ -135,7 +135,7 @@ export const getChatHistory = async (): Promise<Message[]> => {
     const data = await response.json();
     console.log("API: getChatHistory response data:", data);
     
-    let history: any[] = [];
+    let history: Message[] = [];
     if (Array.isArray(data)) {
       history = data;
     } else if (data && Array.isArray(data.history)) {

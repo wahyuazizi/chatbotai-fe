@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthenticated, role, loading, router, pathname]);
 
-  const login = useCallback((token: string, userRole: string) => {
+  const login = useCallback(() => {
     // This function is mostly a placeholder as onAuthStateChange handles the logic.
   }, []);
 

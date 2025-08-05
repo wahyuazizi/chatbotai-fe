@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
-  const { login, isAuthenticated, role, loading } = useAuth();
+  const { } = useAuth();
 
   
 
@@ -49,7 +47,7 @@ export default function LoginPage() {
       // as AuthContext will handle it via onAuthStateChange.
       // The redirect will also be handled by AuthContext.
 
-    } catch (err: any) {
+    } catch (err: Error) {
       console.error("Login failed, error:", err);
       setError(err.message || "Login gagal");
     } finally {
