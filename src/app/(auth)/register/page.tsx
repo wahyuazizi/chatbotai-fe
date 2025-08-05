@@ -50,7 +50,7 @@ export default function RegisterPage() {
       setIsSuccess(true);
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        setError(err.response?.data?.message || "Pendaftaran gagal. Pastikan email belum terdaftar.");
+        setError((err.response?.data as { message?: string })?.message || "Pendaftaran gagal. Pastikan email belum terdaftar.");
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
