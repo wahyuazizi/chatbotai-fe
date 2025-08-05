@@ -22,15 +22,6 @@ jobs:
         with:
           submodules: true
           lfs: false
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-      - name: Install Dependencies
-        run: npm ci
-      - name: Build Next.js App
-        run: NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} npm run build
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
@@ -47,11 +38,10 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTORIOUS_BUSH_0A8EC181E }}
           action: "upload"
-          app_location: "out" # Use pre-built output
+          app_location: "/" # App source code path
           api_location: "" # Api source code path - optional
-          output_location: "" # Already built
+          output_location: "out" # Built app content directory - optional
           github_id_token: ${{ steps.idtoken.outputs.result }}
-          skip_app_build: true # Skip build, use pre-built files
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
