@@ -107,7 +107,7 @@ export default function AdminPage() {
       setUrlToIngest("");
     } catch (err) {
       if (isAxiosError(err)) {
-        setIngestError(err.response?.data?.message || "Failed to ingest URL data");
+        setIngestError((err.response?.data as { message?: string })?.message || "Failed to ingest URL data");
         if (err.response?.status === 401) {
           router.push("/login");
         }
