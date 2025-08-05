@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { sendMessage, getChatHistory, clearChatHistory } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { AxiosError, isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { 
   Send, 
   LogOut, 
@@ -49,7 +49,7 @@ export default function ChatPage() {
             // If backend is empty, try to load from local storage
             const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
             if (savedMessages) {
-              setMessages(JSON.parse(savedMessages).map((msg: any) => ({...msg, timestamp: new Date(msg.timestamp)})));
+              setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: new Date(msg.timestamp)})));
             }
           }
         } catch (error) {
