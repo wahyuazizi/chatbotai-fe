@@ -8,12 +8,12 @@ export function cn(...inputs: ClassValue[]) {
 // Custom type guard for AxiosError
 interface AxiosError extends Error {
   response?: {
-    data?: any;
+    data?: unknown;
     status?: number;
-    headers?: Record<string, any>;
+    headers?: Record<string, unknown>;
   };
-  request?: any;
-  config?: Record<string, any>;
+  request?: unknown;
+  config?: Record<string, unknown>;
   isAxiosError: boolean;
   toJSON: () => object;
 }

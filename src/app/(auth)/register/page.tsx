@@ -49,7 +49,7 @@ export default function RegisterPage() {
       await api.post("/auth/register", { email, password, role: "user" });
       setIsSuccess(true);
     } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
+      if (isAxiosError(err)) {
         setError(err.response?.data?.message || "Pendaftaran gagal. Pastikan email belum terdaftar.");
       } else if (err instanceof Error) {
         setError(err.message);
