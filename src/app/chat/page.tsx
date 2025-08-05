@@ -38,7 +38,7 @@ export default function ChatPage() {
 
   // Load chat history from Supabase on component mount, with localStorage as a fallback
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && isAuthenticated) {
       const loadHistory = async () => {
         try {
           const backendHistory = await getChatHistory();
@@ -49,7 +49,12 @@ export default function ChatPage() {
             // If backend is empty, try to load from local storage
             const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
             if (savedMessages) {
-              setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: msg.timestamp})));
+              try {
+                setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: msg.timestamp})));
+              } catch (e) {
+                console.error("Failed to parse chat history from localStorage", e);
+                setMessages([]);
+              }
             }
           }
         } catch (error) {
@@ -60,7 +65,12 @@ export default function ChatPage() {
           }
           const savedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
           if (savedMessages) {
-            setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: new Date(msg.timestamp)})));
+            try {
+              setMessages(JSON.parse(savedMessages).map((msg: Message) => ({...msg, timestamp: new Date(msg.timestamp).toISOString()})));
+            } catch (e) {
+              console.error("Failed to parse chat history from localStorage", e);
+              setMessages([]);
+            }
           }
         } finally {
           setIsHistoryLoaded(true);
@@ -69,7 +79,7 @@ export default function ChatPage() {
 
       loadHistory();
     }
-  }, [authLoading]);
+  }, [authLoading, isAuthenticated]);
 
   // Save chat history to localStorage whenever messages change
   useEffect(() => {
