@@ -77,7 +77,7 @@ export default function AdminPage() {
       setFileToIngest(null);
     } catch (err) {
       if (isAxiosError(err)) {
-        setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
+        setIngestError((err.response?.data as { message?: string })?.message || "Failed to ingest PDF data");
         if (err.response?.status === 401) {
           router.push("/login");
         }
