@@ -5,7 +5,12 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true
-  }
+  },
+  env: {
+    NEXT_PUBLIC_API_BASE_URL: 'https://chatbotai-fkbtcmapa2agh3cc.westus-01.azurewebsites.net', // Ganti dengan URL backend API Anda
+  },
 };
+
+export default nextConfig;
 
 export default nextConfig;

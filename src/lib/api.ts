@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 const SESSION_ID_KEY = 'chatSessionId';
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000", // Ganti dengan URL API backend Anda
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000", // URL dasar API backend Anda
   headers: {
     "Content-Type": "application/json",
   },
@@ -35,7 +35,7 @@ export const upload = async (files: File[]): Promise<{ message: string }> => {
     formData.append("file", file);
   });
 
-  const response = await api.post("/data/upload", formData, {
+  const response = await api.post("/api/v1/data/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -44,10 +44,8 @@ export const upload = async (files: File[]): Promise<{ message: string }> => {
 };
 
 export const sendMessage = async (userMessage: string): Promise<{ answer: string; session_id?: string }> => {
-  // 1. Baca session_id yang ada dari localStorage
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
 
-  // 2. Dapatkan Auth Token dari Supabase (jika pengguna login)
   let authToken: string | null = null;
   try {
     const { data: { session },
@@ -68,25 +66,21 @@ export const sendMessage = async (userMessage: string): Promise<{ answer: string
   }
 
   try {
-    const response = await api.post("/api/v1/chat", {
+    const response = await api.post("/chat", {
       query: userMessage,
-      session_id: currentSessionId, // Kirim ID yang ada, atau null jika tidak ada
+      session_id: currentSessionId,
     }, {
       headers: headers,
     });
 
-    // 3. Ambil session_id dari respons dan simpan kembali
-    // Ini akan menangani sesi baru dan sesi yang sudah ada secara otomatis
     if (response.data.session_id) {
       localStorage.setItem(SESSION_ID_KEY, response.data.session_id);
     }
 
-    // 4. Kembalikan data untuk ditampilkan di UI
     return response.data;
 
   } catch (error) {
     console.error("Error sending message:", error);
-    // Handle error di UI (misalnya, tampilkan pesan kesalahan)
     throw error;
   }
 };
@@ -105,14 +99,13 @@ export const getChatHistory = async (): Promise<Message[]> => {
     console.error("Error getting Supabase session for history:", error);
   }
 
-  const headers: Record<string, string> = {}; // No Content-Type for GET
+  const headers: Record<string, string> = {};
 
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  // Add session_id as a query parameter for GET request
-  const url = currentSessionId ? `/api/v1/chat/history?session_id=${currentSessionId}` : "/api/v1/chat/history";
+  const url = currentSessionId ? `/chat/history?session_id=${currentSessionId}` : "/chat/history";
 
   try {
     const response = await api.get(url, {
@@ -139,11 +132,10 @@ export const getChatHistory = async (): Promise<Message[]> => {
   }
 };
 
-// Define Message interface if not already defined in this file
 interface Message {
   sender: "user" | "ai";
   text: string;
-  timestamp: string; // Ensure this is a string
+  timestamp: string;
 }
 
 export const clearChatHistory = async (): Promise<void> => {
@@ -169,8 +161,8 @@ export const clearChatHistory = async (): Promise<void> => {
   }
 
   try {
-    await api.post("/api/v1/chat/clear", {
-      session_id: currentSessionId, // Send session_id to clear specific session
+    await api.post("/chat/clear", {
+      session_id: currentSessionId,
     }, {
       headers: headers,
     });
