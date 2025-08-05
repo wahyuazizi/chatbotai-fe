@@ -47,17 +47,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle redirection based on auth state
   useEffect(() => {
     if (!loading) {
+      const publicPages = ['/login', '/register', '/reset-password'];
+      // Normalize pathname to handle trailing slashes from next.config.js
+      const normalizedPathname = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
+
       if (isAuthenticated) {
-        // Redirect admin to /admin, but allow access to /chat
-        if (role === 'admin' && pathname !== '/admin' && pathname !== '/chat') {
-          router.push('/admin');
-        } else if (role !== 'admin' && pathname !== '/chat') {
-          router.push('/chat');
+        // Admin user logic
+        if (role === 'admin') {
+          const allowedAdminPages = ['/admin', '/chat'];
+          if (!allowedAdminPages.includes(normalizedPathname)) {
+            router.push('/admin');
+          }
+        } 
+        // Non-admin (regular) user logic
+        else {
+          if (normalizedPathname !== '/chat') {
+            router.push('/chat');
+          }
         }
       } else {
-        // If not authenticated, redirect to login page, but not if already on public pages.
-        const publicPages = ['/login', '/register', '/reset-password'];
-        if (!publicPages.includes(pathname)) {
+        // Unauthenticated user logic
+        if (!publicPages.includes(normalizedPathname)) {
           router.push('/login');
         }
       }
