@@ -47,9 +47,9 @@ export default function LoginPage() {
       // as AuthContext will handle it via onAuthStateChange.
       // The redirect will also be handled by AuthContext.
 
-    } catch (err: Error) {
+    } catch (err: unknown) {
       console.error("Login failed, error:", err);
-      setError(err.message || "Login gagal");
+      setError(err instanceof Error ? err.message : "Login gagal");
     } finally {
       setIsLoading(false);
     }
