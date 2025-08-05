@@ -102,7 +102,7 @@ export default function AdminPage() {
     }
 
     try {
-      await api.post("/data/ingest", { urls: [urlToIngest] });
+      await api.post("/api/v1/data/ingest", { urls: [urlToIngest] });
       setIngestMessage(`URL '${urlToIngest}' ingested successfully!`);
       setUrlToIngest("");
     } catch (err) {
