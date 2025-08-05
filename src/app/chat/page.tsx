@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { sendMessage, getChatHistory, clearChatHistory } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { isAxiosError } from "axios";
+import { isAxiosError } from "@/lib/utils";
 import { 
   Send, 
   LogOut, 
