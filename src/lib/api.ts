@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 const SESSION_ID_KEY = 'chatSessionId';
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1", // Ganti dengan URL API backend Anda
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000", // Ganti dengan URL API backend Anda
   headers: {
     "Content-Type": "application/json",
   },
@@ -44,15 +44,14 @@ export const upload = async (files: File[]): Promise<{ message: string }> => {
 };
 
 export const sendMessage = async (userMessage: string): Promise<{ answer: string; session_id?: string }> => {
-  const apiEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`; // Pastikan ini benar
-
   // 1. Baca session_id yang ada dari localStorage
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
 
   // 2. Dapatkan Auth Token dari Supabase (jika pengguna login)
   let authToken: string | null = null;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session },
+      } = await supabase.auth.getSession();
     if (session) {
       authToken = session.access_token;
     }
@@ -69,29 +68,21 @@ export const sendMessage = async (userMessage: string): Promise<{ answer: string
   }
 
   try {
-    const response = await fetch(apiEndpoint, {
-      method: 'POST',
+    const response = await api.post("/api/v1/chat", {
+      query: userMessage,
+      session_id: currentSessionId, // Kirim ID yang ada, atau null jika tidak ada
+    }, {
       headers: headers,
-      body: JSON.stringify({
-        query: userMessage,
-        session_id: currentSessionId, // Kirim ID yang ada, atau null jika tidak ada
-      }),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
 
     // 3. Ambil session_id dari respons dan simpan kembali
     // Ini akan menangani sesi baru dan sesi yang sudah ada secara otomatis
-    if (data.session_id) {
-      localStorage.setItem(SESSION_ID_KEY, data.session_id);
+    if (response.data.session_id) {
+      localStorage.setItem(SESSION_ID_KEY, response.data.session_id);
     }
 
     // 4. Kembalikan data untuk ditampilkan di UI
-    return data;
+    return response.data;
 
   } catch (error) {
     console.error("Error sending message:", error);
@@ -101,13 +92,12 @@ export const sendMessage = async (userMessage: string): Promise<{ answer: string
 };
 
 export const getChatHistory = async (): Promise<Message[]> => {
-  const apiEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat/history`; // Ganti dengan URL API riwayat chat Anda
-
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
 
   let authToken: string | null = null;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session },
+      } = await supabase.auth.getSession();
     if (session) {
       authToken = session.access_token;
     }
@@ -122,19 +112,14 @@ export const getChatHistory = async (): Promise<Message[]> => {
   }
 
   // Add session_id as a query parameter for GET request
-  const url = currentSessionId ? `${apiEndpoint}?session_id=${currentSessionId}` : apiEndpoint;
+  const url = currentSessionId ? `/api/v1/chat/history?session_id=${currentSessionId}` : "/api/v1/chat/history";
 
   try {
-    const response = await fetch(url, {
-      method: 'GET',
+    const response = await api.get(url, {
       headers: headers,
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = response.data;
     console.log("API: getChatHistory response data:", data);
     
     let history: Message[] = [];
@@ -162,13 +147,12 @@ interface Message {
 }
 
 export const clearChatHistory = async (): Promise<void> => {
-  const apiEndpoint = "https://chatbotai-fkbtcmapa2agh3cc.westus-01.azurewebsites.net/api/v1/chat/clear"; // Ganti dengan URL API untuk menghapus riwayat chat
-
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
 
   let authToken: string | null = null;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session },
+      } = await supabase.auth.getSession();
     if (session) {
       authToken = session.access_token;
     }
@@ -185,18 +169,12 @@ export const clearChatHistory = async (): Promise<void> => {
   }
 
   try {
-    const response = await fetch(apiEndpoint, {
-      method: 'POST', // Or DELETE, depending on your backend
+    await api.post("/api/v1/chat/clear", {
+      session_id: currentSessionId, // Send session_id to clear specific session
+    }, {
       headers: headers,
-      body: JSON.stringify({
-        session_id: currentSessionId, // Send session_id to clear specific session
-      }),
-      mode: 'cors',
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
     console.log("Chat history cleared successfully on backend.");
   } catch (error) {
     console.error("Error clearing chat history:", error);
