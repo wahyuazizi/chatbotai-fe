@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 const SESSION_ID_KEY = 'chatSessionId';
 
 export const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1", // Ganti dengan URL API backend Anda
   headers: {
     "Content-Type": "application/json",
   },
@@ -44,7 +44,7 @@ export const upload = async (files: File[]): Promise<{ message: string }> => {
 };
 
 export const sendMessage = async (userMessage: string): Promise<{ answer: string; session_id?: string }> => {
-  const apiEndpoint = "http://127.0.0.1:8000/api/v1/chat"; // Ensure this is correct
+  const apiEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`; // Pastikan ini benar
 
   // 1. Baca session_id yang ada dari localStorage
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
@@ -101,7 +101,7 @@ export const sendMessage = async (userMessage: string): Promise<{ answer: string
 };
 
 export const getChatHistory = async (): Promise<Message[]> => {
-  const apiEndpoint = "http://127.0.0.1:8000/api/v1/chat/history"; // Ganti dengan URL API riwayat chat Anda
+  const apiEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat/history`; // Ganti dengan URL API riwayat chat Anda
 
   const currentSessionId = localStorage.getItem(SESSION_ID_KEY);
 
