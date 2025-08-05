@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { api, upload } from "@/lib/api";
-import { AxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,10 +75,14 @@ export default function AdminPage() {
       const response = await upload([fileToIngest], authToken);
       setIngestMessage(response.message || `PDF '${fileToIngest.name}' uploaded and ingestion started!`);
       setFileToIngest(null);
-    } catch (err: AxiosError) {
-      setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
-      if (err.response?.status === 401) {
-        router.push("/login");
+    } catch (err) {
+      if (isAxiosError(err)) {
+        setIngestError(err.response?.data?.message || "Failed to ingest PDF data");
+        if (err.response?.status === 401) {
+          router.push("/login");
+        }
+      } else {
+        setIngestError("An unexpected error occurred.");
       }
     } finally {
       setLoading(false);
@@ -101,10 +105,14 @@ export default function AdminPage() {
       await api.post("/data/ingest", { urls: [urlToIngest] });
       setIngestMessage(`URL '${urlToIngest}' ingested successfully!`);
       setUrlToIngest("");
-    } catch (err: AxiosError) {
-      setIngestError(err.response?.data?.message || "Failed to ingest URL data");
-      if (err.response?.status === 401) {
-        router.push("/login");
+    } catch (err) {
+      if (isAxiosError(err)) {
+        setIngestError(err.response?.data?.message || "Failed to ingest URL data");
+        if (err.response?.status === 401) {
+          router.push("/login");
+        }
+      } else {
+        setIngestError("An unexpected error occurred.");
       }
     } finally {
       setLoading(false);
