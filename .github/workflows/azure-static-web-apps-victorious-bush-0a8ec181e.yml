@@ -43,9 +43,9 @@ jobs:
           app_build_command: "npm run build" # Explicitly define build command
           output_location: "out" # Built app content directory - optional
           github_id_token: ${{ steps.idtoken.outputs.result }}
-          env: # Meneruskan variabel lingkungan secara eksplisit
-            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        env: # Meneruskan variabel lingkungan secara eksplisit
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
