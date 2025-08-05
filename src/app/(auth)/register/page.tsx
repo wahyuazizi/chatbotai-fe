@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AxiosError, isAxiosError } from "axios";
 import {
   Card,
   CardContent,
@@ -47,8 +48,14 @@ export default function RegisterPage() {
       // If the backend validation fails, this might need adjustment.
       await api.post("/auth/register", { email, password, role: "user" });
       setIsSuccess(true);
-    } catch (err: Error) {
-      setError(err.response?.data?.message || "Pendaftaran gagal. Pastikan email belum terdaftar.");
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        setError(err.response?.data?.message || "Pendaftaran gagal. Pastikan email belum terdaftar.");
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setIsLoading(false);
     }
