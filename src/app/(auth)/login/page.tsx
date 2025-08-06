@@ -148,9 +148,9 @@ export default function LoginPage() {
                 <input type="checkbox" className="rounded border-gray-300 text-[#49cc90] focus:ring-[#49cc90]" />
                 <span className="text-gray-600">Ingat saya</span>
               </label>
-              <a href="/forgot-password" className="text-[#49cc90] hover:text-emerald-600 font-medium transition-colors duration-200">
+              {/* <a href="/forgot-password" className="text-[#49cc90] hover:text-emerald-600 font-medium transition-colors duration-200">
                 Lupa kata sandi?
-              </a>
+              </a> */}
             </div>
             
             <Button 
