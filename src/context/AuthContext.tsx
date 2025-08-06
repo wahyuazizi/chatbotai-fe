@@ -26,8 +26,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (authToken?.startsWith('guest-')) return;
-
       if (session) {
         setIsAuthenticated(true);
         const userRole = session.user?.user_metadata?.role || null;
@@ -49,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle redirection based on auth state
   useEffect(() => {
     if (!loading) {
-      const publicPages = ['/login', '/register', '/reset-password'];
+      const publicPages = ['/login', '/register', '/reset-password', '/chat'];
       // Normalize pathname to handle trailing slashes from next.config.js
       const normalizedPathname = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
 
@@ -61,13 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             router.push('/admin');
           }
         } 
-        // Guest user logic
-        else if (role === 'guest') {
-          if (normalizedPathname !== '/chat') {
-            router.push('/chat');
-          }
-        }
-        // Non-admin (regular) user logic
+        // For other authenticated users, redirect to chat if not already there
         else {
           if (normalizedPathname !== '/chat') {
             router.push('/chat');
@@ -82,28 +74,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthenticated, role, loading, router, pathname]);
 
-  const login = useCallback((token: string, role: string) => {
-    // This function is for manual login, like guest login
-    setIsAuthenticated(true);
-    setRole(role);
-    setAuthToken(token);
+  const login = useCallback(() => {
+    // This function is mostly a placeholder as onAuthStateChange handles the logic.
   }, []);
 
   const logout = useCallback(async () => {
-    const isGuest = authToken?.startsWith('guest-');
-
-    if (isGuest) {
-      setIsAuthenticated(false);
-      setRole(null);
-      setAuthToken(null);
-    } else {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error during Supabase logout:", error);
-      }
-      // onAuthStateChange will handle state reset for Supabase users
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error during Supabase logout:", error);
     }
-  }, [authToken]);
+    router.push('/login');
+  }, [router]);
 
   const value = useMemo(() => ({
     isAuthenticated,
