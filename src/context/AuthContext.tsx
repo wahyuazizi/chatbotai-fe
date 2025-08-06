@@ -26,6 +26,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (authToken?.startsWith('guest-')) return;
+
       if (session) {
         setIsAuthenticated(true);
         const userRole = session.user?.user_metadata?.role || null;
@@ -59,6 +61,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             router.push('/admin');
           }
         } 
+        // Guest user logic
+        else if (role === 'guest') {
+          if (normalizedPathname !== '/chat') {
+            router.push('/chat');
+          }
+        }
         // Non-admin (regular) user logic
         else {
           if (normalizedPathname !== '/chat') {
@@ -74,17 +82,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthenticated, role, loading, router, pathname]);
 
-  const login = useCallback(() => {
-    // This function is mostly a placeholder as onAuthStateChange handles the logic.
+  const login = useCallback((token: string, role: string) => {
+    // This function is for manual login, like guest login
+    setIsAuthenticated(true);
+    setRole(role);
+    setAuthToken(token);
   }, []);
 
   const logout = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error during Supabase logout:", error);
+    const isGuest = authToken?.startsWith('guest-');
+
+    if (isGuest) {
+      setIsAuthenticated(false);
+      setRole(null);
+      setAuthToken(null);
+    } else {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error during Supabase logout:", error);
+      }
+      // onAuthStateChange will handle state reset for Supabase users
     }
-    router.push('/login');
-  }, [router]);
+  }, [authToken]);
 
   const value = useMemo(() => ({
     isAuthenticated,

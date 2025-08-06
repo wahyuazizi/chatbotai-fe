@@ -15,6 +15,7 @@ import {
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -22,7 +23,30 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { } = useAuth();
+  const { login } = useAuth();
+  const router = useRouter();
+
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      // Simulate a guest session
+      const guestUser = {
+        id: "guest-" + new Date().getTime(),
+        email: "guest@example.com",
+        role: "guest",
+      };
+      // Store guest session in your auth context
+      login(guestUser.id, guestUser.role);
+      // Redirect to chat page
+      router.push("/chat");
+    } catch (err) {
+      console.error("Guest login failed:", err);
+      setError("Gagal masuk sebagai tamu.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   
 
@@ -168,6 +192,22 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300"></span>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white/80 px-2 text-gray-500">Atau</span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleGuestLogin}
+            disabled={isLoading}
+            className="w-full h-12 bg-white/80 border-gray-300 hover:bg-gray-100/80 text-gray-700 font-semibold rounded-lg transition-all duration-300"
+          >
+            Masuk sebagai Tamu
+          </Button>
         </CardContent>
         
         <CardFooter className="pt-6">
