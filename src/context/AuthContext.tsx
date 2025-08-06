@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle redirection based on auth state
   useEffect(() => {
     if (!loading) {
-      const publicPages = ['/login', '/register', '/reset-password', '/chat'];
+      const publicPages = ['/', '/login', '/register', '/reset-password', '/chat'];
       // Normalize pathname to handle trailing slashes from next.config.js
       const normalizedPathname = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
 
